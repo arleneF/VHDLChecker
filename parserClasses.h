@@ -14,7 +14,7 @@ private:
 	Token *next; //Next pointer for doubly linked list
 	Token *prev; //Previous pointer for doubly linked list
 	string stringRep; //Token value
-	 
+
 	//Allow TokenList class to access Token member variables marked private
   //https://en.wikipedia.org/wiki/Friend_class
   //
@@ -23,17 +23,17 @@ private:
 public:
 	//Default Constructor, pointers initialized to NULL
 	Token() : next(nullptr), prev(nullptr) { }
-		
+
 	//Constructor with string initialization, pointers initialized to NULL
 	Token(const string &stringRep) : next(nullptr), prev(nullptr), stringRep(stringRep) { }
 
-	//Returns the Token's *next member 
+	//Returns the Token's *next member
 	Token* getNext ( ) const {  return next; }
 
 	//Sets the Token's *next member
 	void setNext (Token* next ) { this->next = next; }
 
-	//Returns the Token's *prev member 
+	//Returns the Token's *prev member
 	Token* getPrev ( ) const { return prev; }
 
 	//Sets the Token's *prev member
@@ -51,11 +51,11 @@ class TokenList {
 private:
 	Token *head; //Points to the head of the token list (doubly linked)
 	Token *tail; //Points to the tail of the function list (doubly linked)
-	
+
 public:
 	//Default Constructor, Empty list with pointers initialized to NULL
 	TokenList() : head(nullptr), tail(nullptr) { }
-	
+
 	//Returns a pointer to the head of the list
 	Token* getFirst() const { return head; }
 
@@ -82,7 +82,7 @@ class Tokenizer {
 private:
 	/*State tracking variables for processing a single string*/
 	bool complete; //True if finished processing the current string
-	
+
 	size_t offset; //Current position in string
 	size_t tokenLength; //Current token length
 	string *str; //A pointer to the current string being processed
@@ -95,7 +95,7 @@ private:
 	//(Optionally): may modify offset
 	//Does NOT modify any other member variable of Tokenizer
 	void prepareNextToken();
-	
+
 public:
 	//Default Constructor- YOU need to add the member variable initializers.
 	Tokenizer() : { /*Fill in implementation */ }
@@ -106,7 +106,7 @@ public:
 	void setString(string *str);
 
 	//Returns true if all possible tokens have been extracted from the current string (string *str)
-	bool isComplete() const { /*Fill in implementation */ }
+	bool isComplete() const { return complete; }
 
 	//Returns the next token. Hint: consider the substr function
 	//Updates the tokenizer state
