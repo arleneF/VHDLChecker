@@ -214,32 +214,32 @@ void TokenList::findAndSetTokenDetails(Token *token){
         }
 
 
-//        if (token != nullptr && token->alreadyExist == false) //if this token stringRep shows the first time
-//        {
-//            if (token->getNext() != nullptr && token->getNext()->getNext() != nullptr && token->getNext()->getStringRep() == ":") //which imply it is a vector
-//            {
-//                if (token->details==nullptr) //initialize token detail
-//                    token->details=new tokenDetails;
+        if (token != nullptr && token->alreadyExist == false) //if this token stringRep shows the first time
+        {
+            if (token->getNext() != nullptr && token->getNext()->getNext() != nullptr && token->getNext()->getStringRep() == ":") //which imply it is a vector
+            {
+                if (token->details==nullptr) //initialize token detail
+                    token->details=new tokenDetails;
 //                token->details->type = token->getNext()->getNext()->getStringRep();//Set detail type
 //                if (token->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getStringRep() == "(" &&token->getNext()->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext()->getNext() != nullptr){//Find width
 //                    int length = std::atoi(token->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str()) - std::atoi(token->getNext()->getNext()->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str());
 //                    if (length < 0)
 //                        length = - length;
 //                    token->details->width = length + 1;}
-//            }
-//        }
-//        else if (token != nullptr && token->alreadyExist == true){// if find this token already exists before
-//            if (temp->details != nullptr && token->details != nullptr)
-//            {
-//                token->details->type= temp->details->type;
-//                token->details->width=temp->details->width;
-//            }
-//            else if(temp->details != nullptr){
-//                token->details = new tokenDetails;
-//                token->details->type= temp->details->type;
-//                token->details->width=temp->details->width;
-//            }}
-        //return;
+            }
+        }
+        else if (token != nullptr && token->alreadyExist == true){// if find this token already exists before
+            if (temp->details != nullptr && token->details != nullptr)
+            {
+                token->details->type= temp->details->type;
+                token->details->width=temp->details->width;
+            }
+            else if(temp->details != nullptr){
+                token->details = new tokenDetails;
+                token->details->type= temp->details->type;
+                token->details->width=temp->details->width;
+            }}
+        return;
     }
 
 
@@ -562,6 +562,7 @@ int removeTokensOfType(TokenList &tokenList,tokenType type) {
     return count;
 }
 
+
 //Creates a new TokenList, and returns a pointer to this list
 //Searches for all conditional expressions in tokenList and appends them to the new list
 //Format is as follows:
@@ -574,12 +575,12 @@ TokenList* findAllConditionalExpressions(const TokenList &tokenList)
 {
     TokenList* conditionalExpressionTokenList = new TokenList();
     Token* t = tokenList.getFirst();
-  //  cout<<t->getStringRep()<<endl;
+    cout<<t->getStringRep()<<endl;
     while (t!= nullptr)
     {
         if ((t->getStringRep() == "if" || t->getStringRep() == "elsif") && !t->isComment())
         {
-           // cout<<t->getStringRep()<<endl;
+            //cout<<t->getStringRep()<<endl;
             t = t->getNext();
             while (t && !(t->getStringRep() == "then" && !t->isComment()))
             {
@@ -587,7 +588,7 @@ TokenList* findAllConditionalExpressions(const TokenList &tokenList)
                 t = t->getNext();
 
             }
-
+            conditionalExpressionTokenList ->append("\n");
         }
 
         if (t->getStringRep() == "when" && !t->isComment())
@@ -600,6 +601,7 @@ TokenList* findAllConditionalExpressions(const TokenList &tokenList)
 
                 t = t->getNext();
             }
+            conditionalExpressionTokenList ->append("\n");
         }
 
         t = t->getNext();
@@ -608,220 +610,191 @@ TokenList* findAllConditionalExpressions(const TokenList &tokenList)
     return conditionalExpressionTokenList;
 }
 
-//TokenList* findAllConditionalExpressions(const TokenList &tokenList)
-//{
-//
-//    TokenList* pointer = new TokenList;
-//    Token* temp;
-//    TokenList object;
-//
-//    temp = tokenList.getFirst();
-//
-//    while(temp != nullptr)
-//{
-//
-//        if(temp->getStringRep() == "if" || temp->getStringRep() == "elseif" || temp->getStringRep() == "when")
-//
-//        {
-//
-//            temp = temp -> getNext();
-//
-//            while(temp ->getStringRep()!= "then" && temp ->getStringRep()!= "else")
-//
-//            {
-//
-//                pointer->append(temp ->getStringRep());
-//                temp = temp -> getNext();
-//
-//            }
-//
-//            pointer->append("\n");
-//
-//        }
-//
-//        temp = temp -> getNext();
-//}
-//
-//// pointer = object.getFirst();
-//
-//    return pointer;
-//}
+
+//count the number of tokens
+int countNumTokens(const TokenList &tokenList)
+{
+    int count = 0;
+    Token* t = tokenList.getFirst();
+    while(t)
+    {
+        count ++;
+        t = t->getNext();
+    }
+    return count;
+}
+
+// count the number of conditional expression
+int countNumCondExp(const TokenList &tokenList)
+{
+    int count = 0;
+    Token* t = tokenList.getFirst();
+    while(t->getStringRep()=="\n"){
+        count ++;
+        t= t->getNext();
+    }
+
+    return count;
+}
+
+//check the missing endif for the if conditional statement
+int countNumMissingEndIf(const TokenList &tokenList)
+{
+    int countif = 0;
+    int countendif = 0;
+    int count = 0;
+    Token *t = tokenList.getFirst();
+    while (t!= nullptr)
+    {
+        if (t->getStringRep()=="if" && t->getPrev()->getStringRep()!="end")
+        {
+            countif++;
+            t=t->getNext();
+        }
+        if (t->getStringRep()=="end" && t->getNext()->getStringRep()=="if")
+        {
+            countendif++;
+        }
+    }
+    count = countif - countendif;
+    return count;
+}
+
+int findMissingThen(const TokenList &tokenList, int mode)
+{
+   // TokenList *pointer = new TokenList;
+    Token* temp;
+    Token* temp1;
+    int missing=0;
+    bool FindThen = false;
+    bool theEnd = false;
+
+    temp = tokenList.getFirst();
+    while(temp!= nullptr && theEnd == false)
+    {
+        FindThen = false;
+        if(temp->getNext()->getNext() == nullptr)
+        {
+            theEnd = true;
+        }
+        if((temp->getStringRep() == "if" || temp->getStringRep()=="elsif" )&& (theEnd != true))
+        {
+            cout<<"helooooooooooooooooooo"<<endl;
+            temp1= temp;
+            cout<<"helooooooooooooooooooo2"<<endl;
+            temp=temp->getNext();
+            cout<<temp->getStringRep()<<"see me?"<<endl;
+
+            while(temp->getStringRep()!="if" &&temp->getStringRep()!="elsif" && temp->getStringRep()!="when")
+            {
+                cout<<temp->getStringRep()<<endl;
+                if(temp->getStringRep()=="then")
+                {
+                     FindThen= true;
+                    cout<<"helooooooooooooooooooo3"<<endl;
+                }
+
+                temp = temp->getNext();
+
+            }
+ cout<<"helooooooooooooooooooo4"<<endl;
+            if(FindThen==false && (theEnd != true))
+            {
+                missing++;
+            if(mode==1)
+            {
+                while(temp1!= temp){
+                        cout<<"congroo"<<endl;
+
+                cout <<temp1->getStringRep();
+                    temp1= temp1->getNext();
+                }
+                cout << "-- missing then"<<endl;
+            }
+
+            }
+
+
+        }
+
+       // temp = temp->getNext();
+
+    }
+     cout<<"helooooooooooooooooooo5"<<endl;
+    return missing;
+}
 
 
 /*
- //create a new tokenlist and new temp token
- TokenList* pointer = new TokenList;
- Token* temp;
- //TokenList object;
+//error check for complete
+TokenList* findMissingThen(const TokenList &tokenList)
+{
 
- //make the temp token equal to the first token the tokenlist
- temp = tokenList.getFirst();
+    TokenList* pointer = new TokenList;
+    Token* temp;
+    Token* temp2;
+    TokenList* object = new TokenList;
 
- //while the first token is not null, then goes into the loop
- while(temp != nullptr)
- {
- //to check the when to meet the conditional statement, begins with "if", "else if" and "when"
- if(temp->getStringRep() == "if" || temp->getStringRep() == "elseif" || temp->getStringRep() == "when")
- {
- temp = temp -> getNext();
- //to check when the conditional statement is ended, which ends with "then" or "else"
- while(temp ->getStringRep()!= "then" && temp ->getStringRep()!= "else")
- {
- //if not meat with then and else, append the current token to the tokenlist and
- //make the token points to the next
- pointer->append(temp ->getStringRep());
- temp = temp -> getNext();
- }
- //append the "\n" at the end of the conditional statement
- pointer->append("\n");
- }
- temp = temp -> getNext();
- }
+    temp = tokenList.getFirst();
+    cout<<"heloooooooooo"<<endl;
+    while(temp)
+    {
+        cout<<temp->getStringRep();
+        temp = temp->getNext();
+    }
+    temp = tokenList.getFirst();
+    while(temp != nullptr)
+    {
 
- // pointer = object.getFirst();
+        if(temp->getStringRep() == "if" || temp->getStringRep() == "elseif" || temp->getStringRep() == "when")
+        {
 
- return pointer;
- }
+            temp = temp -> getNext();
 
- ///////////////////////////////
+            while(temp ->getStringRep()!= "then" && temp ->getStringRep()!= "else")
 
- //create a new tokenlist and new temp token
- TokenList* pointer = new TokenList;
- Token* temp;
- //TokenList object;
+            {
 
- //make the temp token equal to the first token the tokenlist
- temp = tokenList.getFirst();
+                pointer->append(temp ->getStringRep());
+                temp = temp -> getNext();
 
- //while the first token is not null, then goes into the loop
- while(temp != nullptr)
- {
- //to check the when to meet the conditional statement, begins with "if", "else if" and "when"
- if(temp->getStringRep() == "if" )//|| temp->getStringRep() == "elseif" || temp->getStringRep() == "when")
- {
- temp = temp -> getNext();
- //to check when the conditional statement is ended, which ends with "then" or "else"
- while(temp ->getStringRep()!= "then" )//&& temp ->getStringRep()!= "else")
- {
- //if not meat with then and else, append the current token to the tokenlist and
- //make the token points to the next
- pointer->append(temp ->getStringRep());
- temp = temp -> getNext();
+            }
+            pointer ->append(temp->getStringRep());
+            pointer->append("\n");
 
- }
- //append the "\n" at the end of the conditional statement
- pointer->append("\n");
- temp = temp->getNext();
+        }
 
- while (temp->getStringRep()!= ";")
- {
- pointer->append(temp ->getStringRep());
- temp = temp -> getNext();
- }
- pointer->append("\n");
- temp = temp->getNext();
+        temp = temp -> getNext();
+    }
 
- if(temp->getStringRep() == "elseif")
- {
- temp = temp->getNext();
- while (temp->getStringRep() != "then")
- {
- pointer ->append(temp->getStringRep());
- temp = temp->getNext();
- }
- pointer ->append("\n");
- temp = temp->getNext();
+    //pointer = object.getFirst();
 
- while (temp->getStringRep()!= ";")
- {
- pointer->append(temp ->getStringRep());
- temp = temp -> getNext();
- }
- pointer->append("\n");
- temp = temp->getNext();
+    temp2 = pointer->getFirst();
+    cout<<"heloooooooooo"<<endl;
+    while(temp2)
+    {
+        cout<<temp2->getStringRep();
+        temp2 = temp2->getNext();
+    }
+    temp2 = pointer->getFirst();
 
- if (temp ->getStringRep() =="else")
- {
- temp = temp->getNext();
- while (temp->getStringRep() != ";")
- {
- pointer ->append(temp->getStringRep());
- temp = temp->getNext();
- }
- pointer ->append("\n");
- temp = temp->getNext();
- }
- }
- if(temp->getStringRep() == "end")
- {
- temp = temp->getNext();
- if(temp ->getStringRep() == "if"){
- pointer ->append("\n");
- }
- }
+    while (temp!=nullptr)
+        {
+        if (temp2->getStringRep()!="\n" && temp2->getPrev()->getStringRep()!="then")
+        {
+            object ->append(temp2->getStringRep());
 
- }
- temp = temp -> getNext();
- }
+        }
+        temp2 = temp2->getNext();
 
- // pointer = object.getFirst();
+        }
 
- return pointer;
 
- }
+
+    return pointer;
+}
+*/
 
 
 
 
-
- /////////////////////////////////////// part 3///////////////////////////
- //create a new tokenlist and new temp token
- /*     TokenList* pointer = new TokenList;
- Token* temp;
- //TokenList object;
-
- //make the temp token equal to the first token the tokenlist
- temp = tokenList.getFirst();
-
- //while the first token is not null, then goes into the loop
- while(temp != nullptr)
- {
- //ask TA about how to pair "if" with "end if"
- if(temp->getStringRep() == "if")
- {
-
- do{
- temp = temp->getNext();
- pointer->append(temp ->getStringRep());
- cout << temp->getStringRep() << endl;
- } while (temp->getStringRep() != "then");
-
-
- }
-
- else if (temp->getStringRep() == "elseif")
- {
- do{
- temp = temp->getNext();
- pointer->append(temp ->getStringRep());
- cout << temp->getStringRep() << endl;
- } while (temp->getStringRep() != "then");
-
-
- }
- else if (temp->getStringRep() == "else")
- {
- do {
- temp = temp->getNext();
- pointer->append(temp ->getStringRep());
- cout << temp->getStringRep() << endl;
- } while (temp->getStringRep() !=";");
- }
- temp = temp -> getNext();
- }
-
- // pointer = object.getFirst();
-
- return pointer;
- }
- */
