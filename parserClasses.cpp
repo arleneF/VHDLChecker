@@ -1,6 +1,7 @@
 //Use only the following libraries:
 #include "parserClasses.h"
 #include <string>
+#include<iostream>
 //****TokenList class function definitions******
 //           function implementations for append have been provided and do not need to be modified
 
@@ -12,32 +13,40 @@ void TokenList::append(const string &str) {
 	append(token);
 }
 
+
+//Copy constructor
 Token::Token(const Token &token){
-    next = token.getNext();
-    prev = token.getPrev();
-    stringRep = token.getStringRep();
-    _isKeyword = token.isKeyword();
-    type = token.getTokenType();
-    details = token.getTokenDetails();
+    next=token.next;
+    prev=token.prev;
+    stringRep=token.stringRep;
+    _isKeyword=token._isKeyword;
+    type=token.type;
+    details=token.details;
 }
 
-void Token::operator =(const Token& token){
-    next = token.getNext();
-    prev = token.getPrev();
-    stringRep = token.getStringRep();
-    _isKeyword = token.isKeyword();
-    type = token.getTokenType();
-    details = token.getTokenDetails();
-}
-
-void Token::setTokenDetails(const string &type, int width = 0){
-    tokenDetails *newnode = new tokenDetails;
-    newnode->width = width;
-}
-
+//Destructor, free any memory owned by this object
 Token::~Token(){
-    if (next)
-        delete[] next;
+    /*if (next){
+        this->prev->next=this->next;
+        delete details;}
+    else{delete details; delete prev; delete next;}
+     
+    if (next){
+        delete [] next;
+    }*/
+    if (details!=nullptr)
+        delete details;
+}
+
+
+//Assignment operator
+void Token::operator =(const Token& token){
+    next=token.next;
+    prev=token.prev;
+    stringRep=token.stringRep;
+    _isKeyword=token._isKeyword;
+    type=token.type;
+    details=token.details;
 }
 
 
@@ -56,6 +65,111 @@ void TokenList::append(Token *token) {
 	}
 }
 
+
+//find token details and type and update token.  May require examining properties of neighbouring tokens
+void TokenList::findAndSetTokenDetails(Token *token){
+    //first to find Keywords and set boolean type as true
+    const int length_Keyword= 100; //97 //get the length of arrayOfKeywords
+    for (int i=0; i<length_Keyword; i++)
+    {
+        if (token->stringRep == arrayOfKeywords[i]){
+            //compare tableOfKeywords
+            token->_isKeyword=true;}
+        else{
+        token->_isKeyword=false;}
+    }
+    
+    
+    //traversing for operator
+    //Didnt consider token like "=>, <=, ==" here, this should be done in prepareNextToken
+    if (std::find(std::begin(arrayOfOperators), std::end(arrayOfOperators), token->stringRep)){
+        token->setTokenType(T_Operator);}
+    
+    
+    //tracersing for a comment body
+    else if(token->prev->stringRep=="--"){
+        token->setTokenType(T_CommentBody);}
+    
+    
+    //traverse for literal
+    //cases where it has bit vectors "0010101", x"1234ABCD"
+    else if ((token->stringRep).find_first_of("\"")!=std::string::npos){ //can find "
+        if ((token->stringRep).find_first_of("\"")==0){// if " starts the first position of token
+            token->details->width=static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1;
+            token->details->type="std_logic_vector";
+            token->setTokenType(T_Literal);
+        }
+        if ((token->stringRep).find_first_of("\"")==1){// if " is the second position of token
+            if ((token->stringRep).at(0)=='X'||(token->stringRep).at(0)=='x')
+            {
+                token->details->width=(static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1)*4;
+                token->details->type="std_logic_vector";
+                token->setTokenType(T_Literal);}
+            else if ((token->stringRep).at(0)=='B'||(token->stringRep).at(0)=='b')
+            {
+                token->details->width=static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1;
+                token->details->type="std_logic_vector";
+                token->setTokenType(T_Literal);}
+            else if ((token->stringRep).at(0)=='O'||(token->stringRep).at(0)=='o')
+            {
+                token->details->width=(static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1)*3;
+                token->details->type="std_logic_vector";
+                token->setTokenType(T_Literal);}
+        }
+    }
+    else if ((token->stringRep).find_first_of("\'")==0 && (token->stringRep).find_first_of("\'")==2){ //'0','1'
+        if ((token->stringRep).at(1)=='0'||(token->stringRep).at(1)=='1'){
+            token->details->type="std_logic";
+            token->details->width=1; 
+            token->setTokenType(T_Literal);}
+    }
+    //traverse for boolean literal
+    else if (token->stringRep=="true" || token->stringRep=="false"){
+        token->setTokenType(T_Literal);
+        token->details->width=1;
+    }
+        
+    //traverse for integer literal
+    else if (isdigit(token->stringRep() ){
+        
+    }//---------------------
+
+    
+    
+    //traverse for identifier
+    //--------------------need to be classified as variable or signal!!! which is not been done yet!--------------------
+    //--------------------also didn't do tolower!----------------
+    //all start from letters except  operator, comment, and literals should be identifier
+    else if(std::find(arrayOfLetter, (arrayOfLetter + 26), &(token->stringRep).at(0)))
+    {
+        token->setTokenType(T_Identifier);
+        if (token->getNext() != nullptr && token->getNext()->getNext() != nullptr && token->getNext()->getStringRep() == ":")
+        {
+            //------------------not sure this way to check variable or signals are right or wrong-----------------------
+            token->details->type = token->getNext()->getNext()->getStringRep();//Set detail type
+            if (token->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getStringRep() == "(" &&token->getNext()->getNext()->getNext()->getNext() != nullptr)//Find width
+            {
+                int length = std::atoi(token->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str()) - std::atoi(token->getNext()->getNext()->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str());
+                if (length < 0)
+                    length = - length;
+                token->details->width = length + 1;
+            }
+        }
+    }
+    
+    
+    //traversing for other_type
+    else
+    {
+        token->setTokenType(T_Other);
+    }
+    return;
+}
+
+
+
+
+
 //Computes a new tokenLength for the next token
 //Modifies: size_t tokenLength, and bool complete
 //(Optionally): may modify offset
@@ -63,7 +177,7 @@ void TokenList::append(Token *token) {
 void Tokenizer::prepareNextToken()
 {   size_t len = str->length();
     bool found =false;
-    int index=offset;
+    size_t index=offset;
     //consider the case of the comment
     if(comment == true){
         tokenLength = len-temp_comment;
@@ -100,7 +214,6 @@ void Tokenizer::prepareNextToken()
                             //you should keep moving forward till you hit the a character of importance or you end
                         }
                     }
-
                 }
                 //one case that indicates delimiter '-' and comment
                 else if(str->at(index)=='-'){
@@ -109,21 +222,20 @@ void Tokenizer::prepareNextToken()
                         tokenLength =1;
                     }
                     //if the next index is still '-' then, all the string behind -- is comment
-                    if(index < len-1 && str->at(index+1)=='-'&& (index - offset)==0){
-
+                    if(index < len-1 && str->at(index+1)=='-'&& (index - offset)==0){ 
                         tokenLength = 2;
                         found = true;
                         comment = true;
-                        temp_comment = index+2;
+                        temp_comment = (int)index+2;
                     }
                     found = true;
                     return;
                 }
                 //all the delimiter with only itself are indicated here
-                //delimieters include #();|&+.
+                //delimieters include #();|&+.,
                 //tokenLength are all equal 1
                 else if(str->at(index)=='#'||str->at(index)=='(' ||str->at(index)==')'||str->at(index)==';'||str->at(index)=='|'||str->at(index)=='&'
-                    ||str->at(index)=='+'||str->at(index)=='.'||str->at(index)==','){
+                    ||str->at(index)=='+'||str->at(index)=='.' ||str->at(index)==','){
                     tokenLength = index- offset;
                     if(tokenLength ==0){
                         tokenLength = 1;
@@ -233,8 +345,7 @@ void Tokenizer::prepareNextToken()
                     //includes all the cases where it has x"0010101", X"0010101", O"0010101", o"0010101", B"0010101", b"0010101"
                     if (index!=0)
                     {
-                        if(str->at(index-1)=='X'||str->at(index-1)=='x'||str->at(index-1)=='B'||str->at(index-1)=='b'||str->at(index-1)=='O'
-                        ||str->at(index-1)=='o'){
+                        if(str->at(index-1)=='X'||str->at(index-1)=='x'||str->at(index-1)=='B'||str->at(index-1)=='b'||str->at(index-1)=='O'||str->at(index-1)=='o'){
                             size_t temp_index = (*str).find_first_of("\"",index+1);
                             tokenLength = temp_index - (index-2);
                             index = temp_index+1;
@@ -251,19 +362,13 @@ void Tokenizer::prepareNextToken()
                     found = true;
                     return;
                 }
-                else {
-                index ++;}
+                else
+                    index ++;
             }
         }
-        if (index == len) {
+        if (index == len)
 			tokenLength = len - offset;
-        }
     }
-
-
-
-
-
 
 
 //Sets the current string to be tokenized
@@ -329,53 +434,45 @@ void TokenList::deleteToken(Token *token)
   else {return;} //when list is null
 }
 
-
-
-//Creates a new TokenList, and returns a pointer to this list
-//Searches for all conditional expressions in tokenList and appends them to the new list
-//Format is as follows:
-//Each token that is part of a condtional expression is appended sequentially
-//At the end of a conditional expression a newline character is appened
-   //Example: if (a = true) then
-   //Your list should include "(", "a", "=", "true", ")" and "\n"
-//tokenList is NOT modified
-TokenList* findAllConditionalExpressions(const TokenList &tokenList)
-{
-    //create a new tokenlist and new temp token
-    TokenList* pointer = new TokenList;
-    Token* temp;
-    //TokenList object;
-
-    //make the temp token equal to the first token the tokenlist
-    temp = tokenList.getFirst();
-
-    //while the first token is not null, then goes into the loop
-    while(temp != nullptr)
-    {
-        //to check the when to meet the conditional statement, begins with "if", "else if" and "when"
-        if(temp->getStringRep() == "if" || temp->getStringRep() == "elseif" || temp->getStringRep() == "when")
-        {
-
-            temp = temp -> getNext();
-
-            //to check when the conditional statement is ended, which ends with "then" or "else"
-            while(temp ->getStringRep()!= "then" && temp ->getStringRep()!= "else")
+//Removes all comments from the tokenList including the -- marker
+//Returns the number of comments removed
+int removeComments(TokenList &tokenList) {
+    Token *temp=tokenList.getFirst(); //create a temp token and initialize it to first element in tokenList
+    int count=0;
+    while (temp!=NULL && temp->getNext() != nullptr){ //if token is not the last element in tokenLisk
+        //cout<<"read"<<temp->getStringRep()<<"as the current token"<<endl;
+            if(temp->getStringRep()=="--")//once detect --
             {
-                //if not meat with then and else, append the current token to the tokenlist and
-                //make the token points to the next
-                pointer->append(temp ->getStringRep());
-                temp = temp -> getNext();
-
+                count++; //update comment number
+                //delete token
+                temp=temp->getNext()->getNext();//point to next token
+                tokenList.deleteToken(temp->getPrev()->getPrev());
+                tokenList.deleteToken(temp->getPrev());
             }
-            //append the "\n" at the end of the conditional statement
-            pointer->append("\n");
-
+            else{//traverse untill it find comment signal
+                temp=temp->getNext();}
         }
-
-        temp = temp -> getNext();
+    delete temp; //free the space which we occupied
+    return count;//return total comment number in 1 file
 }
 
-// pointer = object.getFirst();
 
-    return pointer;
+//Removes all tokens of the given tokenType
+//Returns the number of tokens removed
+int removeTokensOfType(TokenList &tokenList,tokenType type) {
+    Token *temp=tokenList.getFirst();
+    while(temp!=NULL)
+    {
+        if(temp->getTokenType()==type) //if find target type, delete and go to next token
+        {
+            tokenList.deleteToken(temp);
+            temp=temp->getNext();
+        }
+        else
+        {
+            temp=temp->getNext();
+        }
+    }
+    delete temp;
+    return 0;
 }
