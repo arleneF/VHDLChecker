@@ -1,9 +1,8 @@
-//Use only the following libraries:
 #include "parserClasses.h"
 #include <string>
 #include<iostream>
 //****TokenList class function definitions******
-//           function implementations for append have been provided and do not need to be modified
+//function implementations for append have been provided and do not need to be modified
 
 //Creates a new token for the string input, str
 //Appends this new token to the TokenList
@@ -13,7 +12,26 @@ void TokenList::append(const string &str) {
     append(token);
 }
 
+//Appends the token to the TokenList if not null
+//On return from the function, it will be the last token in the list
+void TokenList::append(Token *token) {
+    if (!head) {
+        head = token;
+        tail = token;
+    }
+    else {
+        tail->setNext(token);
+        token->setPrev(tail);
+        tail = token;
+    }
+}
 
+
+////////////////////////////////////////////
+//////                               ///////
+//////   Implementation for Part 1   ///////
+//////                               ///////
+////////////////////////////////////////////
 //Copy constructor
 Token::Token(const Token &token){
     next=token.next;
@@ -37,10 +55,9 @@ Token::~Token(){
         delete details;
 }
 
-
 //Assignment operator
 void Token::operator =(const Token& token){
-
+    
     next=token.next;
     prev=token.prev;
     stringRep=token.stringRep;
@@ -61,21 +78,6 @@ void Token::operator =(const Token& token){
     }
 }
 
-
-//Appends the token to the TokenList if not null
-//On return from the function, it will be the last token in the list
-void TokenList::append(Token *token) {
-    if (!head) {
-        head = token;
-        tail = token;
-    }
-    else {
-        tail->setNext(token);
-        token->setPrev(tail);
-        tail = token;
-    }
-}
-
 //This function returns TRUE if the input is integer literal else FALSE
 bool TokenList::isIntegerLiteral(const string & input)
 {
@@ -91,7 +93,6 @@ bool TokenList::isIntegerLiteral(const string & input)
     return true;
 }
 
-
 //find token details and type and update token.  May require examining properties of neighbouring tokens
 void TokenList::findAndSetTokenDetails(Token *token){
     //tracersing for a comment body
@@ -101,14 +102,12 @@ void TokenList::findAndSetTokenDetails(Token *token){
         token->setTokenType(T_CommentBody);
         return;
     }
-
     //use tolower function to convert everything to lower case since VHDL is case-sensitive except literal
     string str = token->stringRep;
     int len=(int) str.length();
     for(int i=0;i<len;i++){
         str[i] = tolower(str[i]);}
-
-
+    
     //first to find Keywords and set boolean type as true
     const int length_Keyword= 97; //get the length of arrayOfKeywords
     token->_isKeyword=false;
@@ -117,8 +116,7 @@ void TokenList::findAndSetTokenDetails(Token *token){
         if (str == arrayOfKeywords[i]){//compare tableOfKeywords
             token->_isKeyword=true;}
     }
-
-
+    
     //traversing for operator
     //Didnt consider token like "=>, <=, ==" here, this should be done in prepareNextToken
     for (int i=0; i<28; i++)
@@ -127,7 +125,6 @@ void TokenList::findAndSetTokenDetails(Token *token){
             token->setTokenType(T_Operator);
             return;}
     }
-
 
     //traverse for literal
     //cases where it has bit vectors "0010101", x"1234ABCD"
@@ -162,7 +159,6 @@ void TokenList::findAndSetTokenDetails(Token *token){
         }
     }
 
-
     //traverse for std_logic e.g. '0','1'
     if ((token->stringRep)=="'0'"||(token->stringRep)=="'1'"||(token->stringRep)=="'2'"||(token->stringRep)=="'3'"||(token->stringRep)=="'4'"||(token->stringRep)=="'5'"||(token->stringRep)=="'6'"||(token->stringRep)=="'7'"||(token->stringRep)=="'8'"||(token->stringRep)=="'9'"){
         if (token->details == nullptr)
@@ -171,7 +167,6 @@ void TokenList::findAndSetTokenDetails(Token *token){
         token->details->width=1;
         token->setTokenType(T_Literal);
         return;}
-
 
     //traverse for boolean literal
     if (str=="true" || str == "false"){
@@ -183,7 +178,6 @@ void TokenList::findAndSetTokenDetails(Token *token){
         return;
     }
 
-
     //traverse for integer literal
     if (isIntegerLiteral(token->stringRep))
     {
@@ -194,7 +188,6 @@ void TokenList::findAndSetTokenDetails(Token *token){
         token->details->type="integer";
         return;
     }
-
 
     //traverse for identifier
     //all start from letters except  operator, comment, and literals should be identifier
@@ -212,20 +205,18 @@ void TokenList::findAndSetTokenDetails(Token *token){
                 temp = temp1;}
             temp1=temp1->getNext();//else if traverse to next token
         }
-
-
         if (token != nullptr && token->alreadyExist == false) //if this token stringRep shows the first time
         {
             if (token->getNext() != nullptr && token->getNext()->getNext() != nullptr && token->getNext()->getStringRep() == ":") //which imply it is a vector
             {
                 if (token->details==nullptr) //initialize token detail
                     token->details=new tokenDetails;
-//                token->details->type = token->getNext()->getNext()->getStringRep();//Set detail type
-//                if (token->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getStringRep() == "(" &&token->getNext()->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext()->getNext() != nullptr){//Find width
-//                    int length = std::atoi(token->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str()) - std::atoi(token->getNext()->getNext()->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str());
-//                    if (length < 0)
-//                        length = - length;
-//                    token->details->width = length + 1;}
+                token->details->type = token->getNext()->getNext()->getStringRep();//Set detail type
+                if (token->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getStringRep() == "(" &&token->getNext()->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext()->getNext() != nullptr){//Find width
+                    int length = std::atoi(token->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str()) - std::atoi(token->getNext()->getNext()->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str());
+                    if (length < 0)
+                        length = - length;
+                    token->details->width = length + 1;}
             }
         }
         else if (token != nullptr && token->alreadyExist == true){// if find this token already exists before
@@ -239,10 +230,9 @@ void TokenList::findAndSetTokenDetails(Token *token){
                 token->details->type= temp->details->type;
                 token->details->width=temp->details->width;
             }}
-        return;
+        //return;
     }
-
-
+    
     //traversing for other_type
     //if token are not be detected as comment, operator, literal or identifier, then it will be categorize as other
     else
@@ -252,6 +242,22 @@ void TokenList::findAndSetTokenDetails(Token *token){
     }
 }
 
+/*void TokenList::print_out(Token *head, Token *tail)
+{
+    Token *temp=head;
+    for(temp=head;temp!=tail->getNext();temp=temp->getNext())
+    {
+        cout<<temp->getStringRep()<<" ";
+    }
+}
+*/
+
+
+////////////////////////////////////////////
+//////                               ///////
+//////    Implementation for As 3    ///////
+//////                               ///////
+////////////////////////////////////////////
 
 //Computes a new tokenLength for the next token
 //Modifies: size_t tokenLength, and bool complete
@@ -264,13 +270,11 @@ void Tokenizer::prepareNextToken()
     //consider the case of the comment
     if(comment == true){
         tokenLength = len-temp_comment;
-        comment = false;
-    }
+        comment = false;}
     else if (offset == len) //when you traverse to the end of the list
-    {complete = true;}
+        {complete = true;}
     else if(((*str).find_first_not_of(" ", offset))==std::string::npos){
-        complete = true;
-    }
+        complete = true;}
     else if (!complete)
     {
         //meet this condition when what we read is not comment
@@ -281,8 +285,7 @@ void Tokenizer::prepareNextToken()
                 found = true;
                 if(index ==len){
                     complete = true;
-                    return;
-                }
+                    return;}
                 if (tokenLength == 0) {
                     if (index == len){
                         complete = true;
@@ -294,7 +297,7 @@ void Tokenizer::prepareNextToken()
                         offset++;
                         index++;
                         found = false;
-                        //you should keep moving forward till you hit the a character of importance or you end
+                        // keep moving forward till you hit the a character of importance or you end
                     }
                 }
             }
@@ -302,15 +305,13 @@ void Tokenizer::prepareNextToken()
             else if(str->at(index)=='-'){
                 tokenLength = index - offset;
                 if(tokenLength==0){
-                    tokenLength =1;
-                }
+                    tokenLength =1;}
                 //if the next index is still '-' then, all the string behind -- is comment
                 if(index < len-1 && str->at(index+1)=='-'&& (index - offset)==0){
                     tokenLength = 2;
                     found = true;
                     comment = true;
-                    temp_comment = (int)index+2;
-                }
+                    temp_comment = (int)index+2;}
                 found = true;
                 return;
             }
@@ -320,9 +321,8 @@ void Tokenizer::prepareNextToken()
             else if(str->at(index)=='#'||str->at(index)=='(' ||str->at(index)==')'||str->at(index)==';'||str->at(index)=='|'||str->at(index)=='&'
                     ||str->at(index)=='+'||str->at(index)=='.' ||str->at(index)==','){
                 tokenLength = index- offset;
-                if(tokenLength ==0){
-                    tokenLength = 1;
-                }
+                if(tokenLength ==0)
+                    {tokenLength = 1;}
                 found = true;
                 return;
             }
@@ -330,13 +330,10 @@ void Tokenizer::prepareNextToken()
             //* has tokenLengt =1 and ** has tokenlength =2
             else if(str->at(index)=='*'){
                 tokenLength = index - offset;
-                if(tokenLength ==0){
-                    tokenLength =1;
-                }
-                if(index < len-1 && str->at(index+1)=='*'&& (index - offset) ==0 ){
-                    tokenLength =2;
-                }
-
+                if(tokenLength ==0)
+                    {tokenLength =1;}
+                if(index < len-1 && str->at(index+1)=='*'&& (index - offset) ==0 )
+                    {tokenLength =2;}
                 found = true;
                 return;
             }
@@ -344,13 +341,10 @@ void Tokenizer::prepareNextToken()
             // / has tokenLengt =1 and /= has tokenlength =2
             else if(str->at(index)=='/'){
                 tokenLength = index -offset;
-                if(tokenLength ==0){
-                    tokenLength =1;
-                }
-                if((index< len-1) && str->at(index+1)=='=' &&(index - offset) ==0){
-                    tokenLength =2;
-                }
-
+                if(tokenLength ==0)
+                    {tokenLength =1;}
+                if((index< len-1) && str->at(index+1)=='=' &&(index - offset) ==0)
+                    {tokenLength =2;}
                 found = true;
                 return;
             }
@@ -358,11 +352,10 @@ void Tokenizer::prepareNextToken()
             //: has tokenLengt =1 and := has tokenlength =2
             else if(str->at(index)==':'){
                 tokenLength = index - offset;
-                if(tokenLength ==0){
-                    tokenLength = 1;
-                }if((index < len-1)&& str->at(index+1)=='=' &&(index - offset) ==0){
-                    tokenLength = 2;
-                }
+                if(tokenLength ==0)
+                    {tokenLength = 1;}
+                if((index < len-1)&& str->at(index+1)=='=' &&(index - offset) ==0)
+                    {tokenLength = 2;}
                 found = true;
                 return;
             }
@@ -370,15 +363,12 @@ void Tokenizer::prepareNextToken()
             //< has tokenlength =1 where <= and <> have tokenlength =2
             else if(str->at(index)=='<'){
                 tokenLength = index -offset;
-                if(tokenLength ==0){
-                    tokenLength =1;
-                }
-                if((index< len-1)&& str->at(index+1)=='=' && (index - offset) ==0){
-                    tokenLength =2;
-                }
-                if((index< len-1)&& str->at(index+1)=='>' && (index - offset)==0){
-                    tokenLength =2;
-                }
+                if(tokenLength ==0)
+                    {tokenLength =1;}
+                if((index< len-1)&& str->at(index+1)=='=' && (index - offset) ==0)
+                    {tokenLength =2;}
+                if((index< len-1)&& str->at(index+1)=='>' && (index - offset)==0)
+                    {tokenLength =2;}
                 found = true;
                 return;
             }
@@ -386,12 +376,10 @@ void Tokenizer::prepareNextToken()
             // >has tokenlength =1 where >= has tokenlength =2
             else if(str->at(index)=='>'){
                 tokenLength = index -offset;
-                if(tokenLength ==0){
-                    tokenLength =1;
-                }
-                if((index< len-1)&& str->at(index+1)=='=' && (index - offset) ==0){
-                    tokenLength =2;
-                }
+                if(tokenLength ==0)
+                    {tokenLength =1;}
+                if((index< len-1)&& str->at(index+1)=='=' && (index - offset) ==0)
+                    {tokenLength =2;}
                 found = true;
                 return;
             }
@@ -399,12 +387,10 @@ void Tokenizer::prepareNextToken()
             //= has tokenlength =1 where == has tokenlength =2
             else if(str->at(index)=='='){
                 tokenLength = index -offset;
-                if(tokenLength ==0){
-                    tokenLength =1;
-                }
-                if((index< len-1)&& str->at(index+1)=='>' && (index - offset) ==0){
-                    tokenLength =2;
-                }
+                if(tokenLength ==0)
+                    {tokenLength =1;}
+                if((index< len-1)&& str->at(index+1)=='>' && (index - offset) ==0)
+                    {tokenLength =2;}
                 found = true;
                 return;
             }
@@ -421,9 +407,9 @@ void Tokenizer::prepareNextToken()
                 found = true;
                 return;
             }
-
             //Corner cases where it has bit vectors "0010101", x"1234ABCD",
-            else if(str->at(index)=='"'){
+            else if(str->at(index)=='"')
+            {
                 tokenLength = index-offset;
                 //includes all the cases where it has x"0010101", X"0010101", O"0010101", o"0010101", B"0010101", b"0010101"
                 if (index!=0)
@@ -431,15 +417,14 @@ void Tokenizer::prepareNextToken()
                     if(str->at(index-1)=='X'||str->at(index-1)=='x'||str->at(index-1)=='B'||str->at(index-1)=='b'||str->at(index-1)=='O'||str->at(index-1)=='o'){
                         size_t temp_index = (*str).find_first_of("\"",index+1);
                         tokenLength = temp_index - (index-2);
-                        index = temp_index+1;
-                    }
+                        index = temp_index+1;}
                     else {
                         size_t temp_index = (*str).find_first_of("\"",index+1);
                         tokenLength = temp_index - (index-1);
-                        index = temp_index+1;
-                    }
+                        index = temp_index+1;}
                 }
-                else{   size_t temp_index = (*str).find_first_of("\"",index+1);
+                else{
+                    size_t temp_index = (*str).find_first_of("\"",index+1);
                     tokenLength = temp_index - (index-1);
                     index = temp_index+1;}
                 found = true;
@@ -489,7 +474,6 @@ string Tokenizer::getNextToken() {
 
 
 //****Challenge Task Functions******
-
 //Removes the token from the linked list if it is not null
 //Deletes the token
 //On return from function, head, tail and the prev and next Tokens (in relation to the provided token) may be modified.
@@ -517,6 +501,15 @@ void TokenList::deleteToken(Token *token)
 else {return;} //when list is null
 }
 
+
+
+
+////////////////////////////////////////////
+//////                               ///////
+//////   Implementation for Part 1   ///////
+//////                               ///////
+////////////////////////////////////////////
+
 //Removes all comments from the tokenList including the -- marker
 //Returns the number of comments removed
 int removeComments(TokenList &tokenList) {
@@ -537,7 +530,6 @@ int removeComments(TokenList &tokenList) {
     delete temp; //free the space which we occupied
     return count;//return total comment number in 1 file
 }
-
 
 //Removes all tokens of the given tokenType
 //Returns the number of tokens removed
@@ -563,6 +555,14 @@ int removeTokensOfType(TokenList &tokenList,tokenType type) {
 }
 
 
+
+
+////////////////////////////////////////////
+//////                               ///////
+//////   Implementation for Part 2   ///////
+//////                               ///////
+////////////////////////////////////////////
+
 //Creates a new TokenList, and returns a pointer to this list
 //Searches for all conditional expressions in tokenList and appends them to the new list
 //Format is as follows:
@@ -576,225 +576,25 @@ TokenList* findAllConditionalExpressions(const TokenList &tokenList)
     TokenList* conditionalExpressionTokenList = new TokenList();
     Token* t = tokenList.getFirst();
     cout<<t->getStringRep()<<endl;
-    while (t!= nullptr)
+    while (t!= nullptr && t->getNext()!= nullptr)
     {
-        if ((t->getStringRep() == "if" || t->getStringRep() == "elsif") && !t->isComment())
-        {
-            //cout<<t->getStringRep()<<endl;
-            t = t->getNext();
-            while (t && !(t->getStringRep() == "then" && !t->isComment()))
-            {
-                conditionalExpressionTokenList->append(t->getStringRep());
-                t = t->getNext();
-
-            }
-            conditionalExpressionTokenList ->append("\n");
-        }
-
-        if (t->getStringRep() == "when" && !t->isComment())
+        if (t!= nullptr && (t->getStringRep() == "if" || t->getStringRep() == "elsif") && t->getPrev()->getStringRep()!="end" && !t->isComment()&& t->getNext()!= nullptr)
         {
             t = t->getNext();
-
-            while (t && !(t->getStringRep() == "else" && !t->isComment()))
-            {
+            while (t!= nullptr && !(t->getStringRep() == "then" && !t->isComment()) && t->getNext()!= nullptr){
                 conditionalExpressionTokenList->append(t->getStringRep());
-
-                t = t->getNext();
-            }
+                t = t->getNext();}
             conditionalExpressionTokenList ->append("\n");
         }
-
-        t = t->getNext();
-    }
-
+        if (t!= nullptr && t->getStringRep() == "when" && !t->isComment() && t->getNext()!= nullptr)
+        {
+            t = t->getNext();
+            while (t!=nullptr && !(t->getStringRep() == "else" && !t->isComment())&& t->getNext()!= nullptr)
+            {
+                conditionalExpressionTokenList->append(t->getStringRep());
+                t = t->getNext();}
+            conditionalExpressionTokenList ->append("\n");
+        }
+    t = t->getNext();}
     return conditionalExpressionTokenList;
 }
-
-
-//count the number of tokens
-int countNumTokens(const TokenList &tokenList)
-{
-    int count = 0;
-    Token* t = tokenList.getFirst();
-    while(t)
-    {
-        count ++;
-        t = t->getNext();
-    }
-    return count;
-}
-
-// count the number of conditional expression
-int countNumCondExp(const TokenList &tokenList)
-{
-    int count = 0;
-    Token* t = tokenList.getFirst();
-    while(t->getStringRep()=="\n"){
-        count ++;
-        t= t->getNext();
-    }
-
-    return count;
-}
-
-//check the missing endif for the if conditional statement
-int countNumMissingEndIf(const TokenList &tokenList)
-{
-    int countif = 0;
-    int countendif = 0;
-    int count = 0;
-    Token *t = tokenList.getFirst();
-    while (t!= nullptr)
-    {
-        if (t->getStringRep()=="if" && t->getPrev()->getStringRep()!="end")
-        {
-            countif++;
-            t=t->getNext();
-        }
-        if (t->getStringRep()=="end" && t->getNext()->getStringRep()=="if")
-        {
-            countendif++;
-        }
-    }
-    count = countif - countendif;
-    return count;
-}
-
-int findMissingThen(const TokenList &tokenList, int mode)
-{
-   // TokenList *pointer = new TokenList;
-    Token* temp;
-    Token* temp1;
-    int missing=0;
-    bool FindThen = false;
-    bool theEnd = false;
-
-    temp = tokenList.getFirst();
-    while(temp!= nullptr && theEnd == false)
-    {
-        FindThen = false;
-        if(temp->getNext()->getNext() == nullptr)
-        {
-            theEnd = true;
-        }
-        if((temp->getStringRep() == "if" || temp->getStringRep()=="elsif" )&& (theEnd != true))
-        {
-            cout<<"helooooooooooooooooooo"<<endl;
-            temp1= temp;
-            cout<<"helooooooooooooooooooo2"<<endl;
-            temp=temp->getNext();
-            cout<<temp->getStringRep()<<"see me?"<<endl;
-
-            while(temp->getStringRep()!="if" &&temp->getStringRep()!="elsif" && temp->getStringRep()!="when")
-            {
-                cout<<temp->getStringRep()<<endl;
-                if(temp->getStringRep()=="then")
-                {
-                     FindThen= true;
-                    cout<<"helooooooooooooooooooo3"<<endl;
-                }
-
-                temp = temp->getNext();
-
-            }
- cout<<"helooooooooooooooooooo4"<<endl;
-            if(FindThen==false && (theEnd != true))
-            {
-                missing++;
-            if(mode==1)
-            {
-                while(temp1!= temp){
-                        cout<<"congroo"<<endl;
-
-                cout <<temp1->getStringRep();
-                    temp1= temp1->getNext();
-                }
-                cout << "-- missing then"<<endl;
-            }
-
-            }
-
-
-        }
-
-       // temp = temp->getNext();
-
-    }
-     cout<<"helooooooooooooooooooo5"<<endl;
-    return missing;
-}
-
-
-/*
-//error check for complete
-TokenList* findMissingThen(const TokenList &tokenList)
-{
-
-    TokenList* pointer = new TokenList;
-    Token* temp;
-    Token* temp2;
-    TokenList* object = new TokenList;
-
-    temp = tokenList.getFirst();
-    cout<<"heloooooooooo"<<endl;
-    while(temp)
-    {
-        cout<<temp->getStringRep();
-        temp = temp->getNext();
-    }
-    temp = tokenList.getFirst();
-    while(temp != nullptr)
-    {
-
-        if(temp->getStringRep() == "if" || temp->getStringRep() == "elseif" || temp->getStringRep() == "when")
-        {
-
-            temp = temp -> getNext();
-
-            while(temp ->getStringRep()!= "then" && temp ->getStringRep()!= "else")
-
-            {
-
-                pointer->append(temp ->getStringRep());
-                temp = temp -> getNext();
-
-            }
-            pointer ->append(temp->getStringRep());
-            pointer->append("\n");
-
-        }
-
-        temp = temp -> getNext();
-    }
-
-    //pointer = object.getFirst();
-
-    temp2 = pointer->getFirst();
-    cout<<"heloooooooooo"<<endl;
-    while(temp2)
-    {
-        cout<<temp2->getStringRep();
-        temp2 = temp2->getNext();
-    }
-    temp2 = pointer->getFirst();
-
-    while (temp!=nullptr)
-        {
-        if (temp2->getStringRep()!="\n" && temp2->getPrev()->getStringRep()!="then")
-        {
-            object ->append(temp2->getStringRep());
-
-        }
-        temp2 = temp2->getNext();
-
-        }
-
-
-
-    return pointer;
-}
-*/
-
-
-
-

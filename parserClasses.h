@@ -20,8 +20,8 @@ const string Letter="abcdefghijklmnopqrstuvwxyz";
 
 
 struct tokenDetails {
-  string type; //boolean, std_logic, std_logic_vector, integer etc.
-  int width; //bit width for vector types
+    string type; //boolean, std_logic, std_logic_vector, integer etc.
+    int width; //bit width for vector types
 };
 
 //Declare your variables for storing delimiters here:
@@ -39,25 +39,25 @@ private:
     tokenDetails *details; //pointer to tokenDetails struct, owned by this token, only valid if type is T_Literal or  is a T_Identifier and is a variable/signal.  Lazy allocation, only allocated when needed (see setTokenDetails function declaration).
 
 	//Allow TokenList class to access Token member variables marked private
-  //https://en.wikipedia.org/wiki/Friend_class
+    //https://en.wikipedia.org/wiki/Friend_class
 	friend class TokenList;
 
 public:
 	//Default Constructor, pointers initialized to NULL, and other variable initialization
-  //tokenDetails should NOT be allocated here
+    //tokenDetails should NOT be allocated here
 	Token() : next(nullptr), prev(nullptr), details(NULL), alreadyExist(false), _isKeyword(false) { }
 
 	//Constructor with string initialization
-	Token(const string &stringRep) : next(nullptr), prev(nullptr), stringRep(stringRep), alreadyExist(false), _isKeyword(false), details(nullptr) { }
+	Token(const string &stringRep) : next(nullptr), prev(nullptr), stringRep(stringRep), alreadyExist(false), _isKeyword(false), details(nullptr), type(T_Other)  { }
 
     //copy constructor
-  Token(const Token &token);
+    Token(const Token &token);
 
-  //Destructor, free any memory owned by this object
+    //Destructor, free any memory owned by this object
     ~Token();
 
-  //Assignment operator
-  void operator =(const Token& token);
+    //Assignment operator
+    void operator =(const Token& token);
 
 	//Returns the Token's *next member
 	Token* getNext ( ) const {  return next; }
@@ -77,40 +77,42 @@ public:
 	//Sets the token's stringRep variable
 	void setStringRep (const string& stringRep ) { this->stringRep = stringRep; }
 
-  //Returns true if token is a keyword
-  bool isKeyword () const { return _isKeyword; }
+    //Returns true if token is a keyword
+    bool isKeyword () const { return _isKeyword; }
 
-  //Sets isKeyword to true
-  void setKeyword() { _isKeyword = true; }
+    //Sets isKeyword to true
+    void setKeyword() { _isKeyword = true; }
 
-  //Returns the token type
-  tokenType getTokenType() const { return type; }
+    //Returns the token type
+    tokenType getTokenType() const { return type; }
 
-  //Set's the token type
-  void setTokenType(tokenType type) { this->type = type; }
+    //Set's the token type
+    void setTokenType(tokenType type) { this->type = type; }
 
-  //Returns true if token matches this type
-  bool isOperator() const { return (type == T_Operator); }
-  //Returns true if token matches this type
-  bool isIdentifier() const { return (type == T_Identifier); }
-  //Returns true if token matches this type
-  bool isLiteral() const { return (type == T_Literal); }
-  //Returns true if token matches this type
-  bool isComment() const { return (type == T_CommentBody); }
-  //Returns true if token matches this type
-  bool isOther() const { return (type == T_Other); }
+    //Returns true if token matches this type
+    bool isOperator() const { return (type == T_Operator); }
+    //Returns true if token matches this type
+    bool isIdentifier() const { return (type == T_Identifier); }
+    //Returns true if token matches this type
+    bool isLiteral() const { return (type == T_Literal); }
+    //Returns true if token matches this type
+    bool isComment() const { return (type == T_CommentBody); }
+    //Returns true if token matches this type
+    bool isOther() const { return (type == T_Other); }
 
-  //Returns a pointer to tokenDetails
-  tokenDetails* getTokenDetails() const { return details; }
+    //Returns a pointer to tokenDetails
+    tokenDetails* getTokenDetails() const { return details; }
 
-  //Set's the tokenDetails given a string type and optional vector width
-  //Allocates tokenDetails if it doesn't already exist
+    //Set's the tokenDetails given a string type and optional vector width
+    //Allocates tokenDetails if it doesn't already exist
     void setTokenDetails(const string &type, int width = 0)
     {
       if (this->details == nullptr)
-          details = new tokenDetails;
-      details->type=type; details->width=0;}
-    };
+        details = new tokenDetails;
+    details->type=type;
+    details->width=width;
+    }
+};
 
 //A doubly-linked list class consisting of Token elements
 class TokenList {
@@ -137,13 +139,15 @@ public:
 	//On return from the function, it will be the last token in the list
 	void append(Token *token);
 
-  //Removes the token from the linked list if it is not null
+    //Removes the token from the linked list if it is not null
 	//Deletes the token
 	//On return from function, head, tail and the prev and next Tokens (in relation to the provided token) may be modified.
 	void deleteToken(Token *token);
-    bool isIntegerLiteral(const string & input); //--------------------------
-  //find token details and type and update token.  May require examining properties of neighbouring tokens
-  void findAndSetTokenDetails(Token *token);
+    bool isIntegerLiteral(const string & input);
+    //find token details and type and update token.  May require examining properties of neighbouring tokens
+    void findAndSetTokenDetails(Token *token);
+    
+   // void print(Token *token);
 
 };
 
