@@ -4,6 +4,7 @@
 //Use only the string library DO NOT add any other libraries
 #include <string>
 #include <ctype.h>
+#include <cctype>
 
 using namespace std;
 
@@ -11,13 +12,13 @@ enum tokenType {T_Operator, T_Identifier, T_Literal, T_CommentBody, T_Other};
 
 const string arrayOfKeywords[]={"abs", "access", "after", "alias", "all", "and", "architecture", "array", "assert", "attribute",  "begin", "block", "body", "buffer", "bus", "case", "component", "configuration", "constant", "disconnect", "downto", "else", "elseif", "end", "entity", "exit", "file", "for", "function", "generate", "generic", "group", "guarded", "if", "impure", "in", "inertial", "inout", "is", "label", "library", "linkage", "literal", "loop", "map", "mod", "nand", "new", "next", "nor", "not", "null", "of", "on", "open", "or", "others", "out", "package", "port", "postponed", "procedure", "process", "pure", "range", "record", "register", "reject", "rem", "report", "return", "rol", "ror", "select" ,"severity" ,"signal" ,"shared" ,"sla" ,"sll" ,"sra" ,"srl" ,"subtype", "then", "to", "transport", "type", "unaffected", "units", "until", "use", "variable", "wait", "when", "while", "with", "xnor", "xor"};
 
-const string arrayOfOperators[]={"<=","/=","=>",">","<","+","-","*","/","=","**","&","abs","not","mod","rem","sll","srl","sla","sra","rol","ror","and","or","xor","xnor","nor","nand"};
+string arrayOfOperators1[]={"<=","/=","=>",">","<","+","-","*","/","=","**","&","abs","not","mod","rem","sll","srl","sla","sra","rol","ror","and","or","xor","xnor","nor","nand"};
 
 const string arrayOfLetter[]={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
 
 //const string arrayOfLetter[]={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
-    
+
 struct tokenDetails {
   string type; //boolean, std_logic, std_logic_vector, integer etc.
   int width; //bit width for vector types
@@ -107,9 +108,9 @@ public:
     {
       if (this->details == nullptr)
           details = new tokenDetails;
-      details->type=type; details->width=0;}
-    };
-
+      details->type=type; details->width=width;
+    }
+};
 //A doubly-linked list class consisting of Token elements
 class TokenList {
 private:
@@ -139,7 +140,7 @@ public:
 	//Deletes the token
 	//On return from function, head, tail and the prev and next Tokens (in relation to the provided token) may be modified.
 	void deleteToken(Token *token);
-
+    bool isIntegerLiteral(const string & input); //--------------------------
   //find token details and type and update token.  May require examining properties of neighbouring tokens
   void findAndSetTokenDetails(Token *token);
 

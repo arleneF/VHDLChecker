@@ -21,7 +21,7 @@ int main() {
 	Tokenizer tokenizer;
 
 	//Read in a file line-by-line and tokenize each line
-	sourceFile.open("/Users/arlene/Desktop/ENSC251Final_Project/ENSC251Final_Project/test.vhd");
+	sourceFile.open("test.vhd~");
 	if (!sourceFile.is_open()) {
 		cout << "Failed to open file" << endl;
 		return 1;
@@ -39,27 +39,12 @@ int main() {
 
 
 	/*Test your tokenization of the file by traversing the tokens list and printing out the tokens*/
-    //cout<<"total comment delete is "<<removeComments(tokens)<<endl;
-    removeComments(tokens);
-    
-    /*Test your tokenization of the file by traversing the tokens list and printing out the tokens*/
-    Token *t = tokens.getFirst();
-    while(t) {
-        cout << t->getStringRep() << " ";
-        t = t->getNext();
-    }
-    
-    /*cout<<"after delete"<<endl;
-     tokens.deleteToken(t);
-     Token *a = tokens.getFirst();
-     while(a) {
-     cout << a->getStringRep() << " ";
-     a = a->getNext();
-     }*/
+	Token *t = tokens.getFirst();
+	while(t) {
+		cout << t->getStringRep() << " ";
+		t = t->getNext();
+	}
 
-    
-    
-    
   /* For your testing purposes only */
 
   /* Ensure that tokens have all type information set*/
