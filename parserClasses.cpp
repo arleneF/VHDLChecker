@@ -49,6 +49,7 @@ void Tokenizer::prepareNextToken()
                 switch (str->at(index))
                 {
                 case ' ':
+				case '\t'://when the next readin token is a whitespace or \t
                     found = true;
 					if (index == offset)
 					{ //when index and offset represent the same position
@@ -62,7 +63,7 @@ void Tokenizer::prepareNextToken()
                     }
                     tokenLength=index-offset;
 					break;
-                case '<':
+					case '<':
                     if(tokenLength==0 && str->at(index+1)=='='&& str->at(index+1)!=len)
                     break;
                 case '+':
@@ -86,9 +87,7 @@ void Tokenizer::prepareNextToken()
                 default:
                     index++;
                 }
-
             }
-
         }
     }
 }
@@ -102,18 +101,12 @@ void Tokenizer::prepareNextToken()
 //Resets all Tokenizer state variables
 //Calls Tokenizer::prepareNextToken() as the last statement before returning.
 void Tokenizer::setString(string *str) {
-    if (str->length() == 0) {
-		//this is executed if a blank string is passed in
-		complete = true;
-	}
-	else {
-		//if the string has characters in it then you initialize some variables and prepare the next token for the get next token funtion
-		complete = false;
-		offset = 0;
-		tokenLength = 0;
-		this->str = str;
-		prepareNextToken();
-	}
+    //if the string has characters in it then you initialize some variables and prepare the next token for the get next token funtion
+    complete = false;
+    offset = 0;
+    tokenLength = 0;
+    this->str = str;
+    prepareNextToken();
 }
 
 //Returns the next token. Hint: consider the substr function
@@ -126,11 +119,10 @@ string Tokenizer::getNextToken() {
 	offset = offset + tokenLength;
 	//move to the new position to seek forward
 	tokenLength = 0;
-
 	if (comment) {comment = false;}
 	if (temp == "--") {comment = true;}
 	prepareNextToken();
-	return temp;
+    return temp;
 }
 
 
@@ -164,6 +156,6 @@ void TokenList::deleteToken(Token *token)
 
 //Removes all comments from the tokenList including the -- marker
 //Returns the number of comments removed
-int removeComments(TokenList &tokenList) {/*Fill in implementation */ }
+//int removeComments(TokenList &tokenList) {/*Fill in implementation */ }
 
 

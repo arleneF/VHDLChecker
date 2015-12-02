@@ -13,7 +13,7 @@ int main() {
 	Tokenizer tokenizer;
 
 	//Read in a file line-by-line and tokenize each line
-	sourceFile.open("test.txt");
+	sourceFile.open("test.vhd");
 	if (!sourceFile.is_open()) {
 		cout << "Failed to open file" << endl;
 		return 1;
@@ -29,27 +29,25 @@ int main() {
 			lineA.erase(lineA.length()-1, 1);
 			getline(sourceFile, lineB);
 			lineA += lineB;
-
 		}
-        cout << "1";
 		tokenizer.setString(&lineA);
 		while(!tokenizer.isComplete()) {
 			tokens.append(tokenizer.getNextToken());
-			cout << "2";
 		}
 		//Re-insert newline that was removed by the getline function
 		tokens.append("\n");
 	}
 
-	removeComments(tokens);
+	//removeComments(tokens);
 
 
-	/*Test your tokenization of the file by traversing the tokens list and printing out the tokens*/
+	//Test your tokenization of the file by traversing the tokens list and printing out the tokens
 	Token *t = tokens.getFirst();
 	while(t) {
 		cout << t->getStringRep() << " ";
 		t = t->getNext();
 	}
+
 
 	return 0;
 }

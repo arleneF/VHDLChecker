@@ -118,6 +118,7 @@ public:
 
 //Removes all comments from the tokenList including the -- marker
 //Returns the number of comments removed
-int removeComments(TokenList &tokenList);
+
+//int removeComments(TokenList &tokenList);
 
 #endif /* PARSERCLASSES_H_ */
