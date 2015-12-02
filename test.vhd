@@ -1,6 +1,7 @@
-signal a: std_logic
-signal b:std_logic_vector (4 downto 0)
-if a => "0000"
-when b ="0000"
+signal a : STd_loGic
+-- signal b:std_logic_vector (4 downto 0)
+if a => "000"  blabla
+if c =>  dkdkkd then
+when b = "1000"
 
-end if
+then

@@ -13,7 +13,7 @@ int main() {
 	Tokenizer tokenizer;
 
 	//Read in a file line-by-line and tokenize each line
-	sourceFile.open("test.vhd");
+	sourceFile.open("/Users/arlene/Desktop/ENSC251Final_Project/ENSC251Final_Project/test.vhd");
 	if (!sourceFile.is_open()) {
 		cout << "Failed to open file" << endl;
 		return 1;
@@ -30,6 +30,7 @@ int main() {
 			getline(sourceFile, lineB);
 			lineA += lineB;
 		}
+
 		tokenizer.setString(&lineA);
 		while(!tokenizer.isComplete()) {
 			tokens.append(tokenizer.getNextToken());
@@ -37,17 +38,23 @@ int main() {
 		//Re-insert newline that was removed by the getline function
 		tokens.append("\n");
 	}
+    cout<<"total comment delete is "<<removeComments(tokens)<<endl;
+    //removeComments(tokens);
 
-	//removeComments(tokens);
-
-
-	//Test your tokenization of the file by traversing the tokens list and printing out the tokens
+	/*Test your tokenization of the file by traversing the tokens list and printing out the tokens*/
 	Token *t = tokens.getFirst();
 	while(t) {
 		cout << t->getStringRep() << " ";
 		t = t->getNext();
 	}
-
-
+    
+    /*cout<<"after delete"<<endl;
+    tokens.deleteToken(t);
+    Token *a = tokens.getFirst();
+    while(a) {
+        cout << a->getStringRep() << " ";
+        a = a->getNext();
+    }*/
+    
 	return 0;
 }

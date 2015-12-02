@@ -23,7 +23,7 @@ int main() {
 	Tokenizer tokenizer;
 
 	//Read in a file line-by-line and tokenize each line
-	sourceFile.open("/Users/arlene/Desktop/251Final/251Final/trickyCombinations.vhd");
+	sourceFile.open("/Users/arlene/Desktop/251Final/251Final/test.vhd");
 	if (!sourceFile.is_open()) {
 		cout << "Failed to open file" << endl;
 		return 1;
@@ -40,15 +40,15 @@ int main() {
     }
 
 	/*Test your tokenization of the file by traversing the tokens list and printing out the tokens*/
-//	Token *t = tokens.getFirst();
-//    while(t) {
-//        cout << t->getStringRep() << " ";
-//        t = t->getNext();
-//    }
+	Token *t = tokens.getFirst();
+    while(t) {
+        cout << t->getStringRep() << " ";
+        t = t->getNext();
+    }
     
     
 //--------------------------------------test code for part 1-------------------------------------------
-/*    Token *t = tokens.getFirst();
+    /*Token *t = tokens.getFirst();
     while(t){
         tokens.findAndSetTokenDetails(t);
         if (t->isOperator()){
@@ -107,12 +107,12 @@ int main() {
     
     
 //--------------------------------------------test part 2-----------------------------------------------
-  TokenList *p = findAllConditionalExpressions(tokens);
+ /* TokenList *p = findAllConditionalExpressions(tokens);
     Token *t = p->getFirst();
     while(t!= nullptr) {
         cout << t->getStringRep() << " ";
         t = t->getNext();
-    }
+    }*/
     
 	return 0;
 }

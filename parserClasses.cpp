@@ -211,7 +211,14 @@ void TokenList::findAndSetTokenDetails(Token *token){
             {
                 if (token->details==nullptr) //initialize token detail
                     token->details=new tokenDetails;
-                token->details->type = token->getNext()->getNext()->getStringRep();//Set detail type
+               
+    //----------Set detail type--------because VHDL is non-sensitive about capitalization, I try to convert to lower case---//
+                string lowerStringRep = token->getNext()->getNext()->getStringRep();
+                int len=(int) lowerStringRep.length();
+                for(int i=0;i<len;i++){
+                    lowerStringRep[i] = tolower(lowerStringRep[i]);}
+                token->details->type = lowerStringRep;
+                
                 if (token->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getStringRep() == "(" &&token->getNext()->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext()->getNext() != nullptr){//Find width
                     int length = std::atoi(token->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str()) - std::atoi(token->getNext()->getNext()->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str());
                     if (length < 0)
@@ -241,17 +248,6 @@ void TokenList::findAndSetTokenDetails(Token *token){
         return;
     }
 }
-
-/*void TokenList::print_out(Token *head, Token *tail)
-{
-    Token *temp=head;
-    for(temp=head;temp!=tail->getNext();temp=temp->getNext())
-    {
-        cout<<temp->getStringRep()<<" ";
-    }
-}
-*/
-
 
 ////////////////////////////////////////////
 //////                               ///////
@@ -503,7 +499,6 @@ else {return;} //when list is null
 
 
 
-
 ////////////////////////////////////////////
 //////                               ///////
 //////   Implementation for Part 1   ///////
@@ -575,7 +570,6 @@ TokenList* findAllConditionalExpressions(const TokenList &tokenList)
 {
     TokenList* conditionalExpressionTokenList = new TokenList();
     Token* t = tokenList.getFirst();
-    cout<<t->getStringRep()<<endl;
     while (t!= nullptr && t->getNext()!= nullptr)
     {
         if (t!= nullptr && (t->getStringRep() == "if" || t->getStringRep() == "elsif") && t->getPrev()->getStringRep()!="end" && !t->isComment()&& t->getNext()!= nullptr)

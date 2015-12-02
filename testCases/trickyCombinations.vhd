@@ -1,4 +1,4 @@
-signal CLK : STD_logic; --comment
+signal CLK : std_logic;
 signal signalOne : std_logic_vector(0 to 3):=
 x"A";
 signal signalTwo :std_logic_vector(3 downto 0):=
@@ -21,13 +21,13 @@ process(signalOne,signalTwo)
 	variable C : integer :=0;
 begin
 	C :=5**2;
-	if (signalOne < signalTwo and signalTwo'length = 4 and signalTwo(1) = '0') then signalOne <= signalThree; elsif (signalOne < signalThree or signalOne /= signalOne or R.someMember) signalOne <= signalTwo then
+	if (signalOne < signalTwo and signalTwo'length = 4 and signalTwo(1) = '0') then signalOne <= signalThree; elsif (signalOne < signalThree or signalOne /= signalOne or R.someMember) signalOne <= signalTwo else	
 		signalOne <= '0' & '1' & signalTwo(1 downto 0);
 	        signalTwo <= (others => '0');  
 	        --signalTwo <= (others => '1');
 		if (signalThree'
 length =4)then
-		signalThree	 <=B"111";
+		signalThree	 <=B"1111";
 end if;
 		signalFour(1) <= '1' & '0';
 	end if;--abc

@@ -146,9 +146,6 @@ public:
     bool isIntegerLiteral(const string & input);
     //find token details and type and update token.  May require examining properties of neighbouring tokens
     void findAndSetTokenDetails(Token *token);
-    
-   // void print(Token *token);
-
 };
 
 //A class for tokenizing a string of VHDL  code into tokens

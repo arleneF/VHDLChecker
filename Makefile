@@ -1,9 +1,6 @@
-APPS = assignment3
+APPS = project
 
-#Change to your own student number
-STUDENT_NUMBER = 123456789
-
-OBJECTS = parserClasses.o assignment3.o
+OBJECTS = parserClasses.o project.o
 HEADERS = parserClasses.h
 
 CXXFLAGS += -g -Wall -std=c++11
@@ -18,6 +15,6 @@ clean:
 	$(RM) *.o $(APPS)
 
 tar:
-	tar -cf $(STUDENT_NUMBER).tar.gz Makefile *.cpp *.h
+	tar -czf Final_Project.tar.gz *.cpp *.h
 
 
