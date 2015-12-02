@@ -1,6 +1,7 @@
 //Use only the following libraries:
 #include "parserClasses.h"
 #include <string>
+#include <iostream>
 //****TokenList class function definitions******
 //           function implementations for append have been provided and do not need to be modified
 
@@ -34,63 +35,182 @@ void Tokenizer::prepareNextToken()
 {   size_t len = str->length();
     bool found =false;
     int index=offset;
-    if (offset == len) //when you traverse to the end of the list
+    if(comment == true){
+        tokenLength = len-temp_comment;
+        comment = false;
+    }
+    else if (offset == len) //when you traverse to the end of the list
 		{complete = true;}
+    else if(((*str).find_first_not_of(" ", offset))==std::string::npos){
+        complete = true;
+    }
     else if (!complete)
     {
-        if(comment) //if next token is comment
-        {   tokenLength = len-offset;
-            return;
-        }
-        else
-        {       //meet this condition when what we read is not comment
+           //meet this condition when what we read is not comment
             while (!found && index<len)
             {
-                switch (str->at(index))
-                {
-                case ' ':
-				case '\t'://when the next readin token is a whitespace or \t
+                if(str->at(index)==' ' || str->at(index)=='\t'){
+                    tokenLength = index-offset;
                     found = true;
-					if (index == offset)
-					{ //when index and offset represent the same position
-						if (index == len){ //at the end of the string
-							complete = true; //make two boolean be true to get out of the loop
-							found = true;}
-						else {
-							offset++;
-							index++;
-							found = false;}
+                    if(index ==len){
+                        complete = true;
+                        return;
                     }
-                    tokenLength=index-offset;
-					break;
-					case '<':
-                    if(tokenLength==0 && str->at(index+1)=='='&& str->at(index+1)!=len)
-                    break;
-                case '+':
-                    if(tokenLength==0){
-                        tokenLength=1;
+                    if (tokenLength == 0) {
+                        if (index == len){
+                            complete = true;
+                            found = true;
+                            return;
+                            //end of string condition, you hit the end of line and are thus complete
+                        }
+                        else {
+                            offset++;
+                            index++;
+                            found = false;
+                            //you should keep moving forward till you hit the a character of importance or you end
+                        }
                     }
-                    found = true;
-                    break;
-                case '&':
-                    if(tokenLength==0){
-                        tokenLength=1;
-                    }
-                    found = true;
-                    break;
-                case '#':
-                    if(tokenLength==0){
-                        tokenLength=1;
-                    }
-                    found = true;
-                    break;
-                default:
-                    index++;
+
                 }
+                if(str->at(index)=='-'){
+                    //cout << "find comment "<<endl;
+                    tokenLength = index - offset;
+                    //cout << "find tokenlength "<< tokenLength <<endl;
+                    if(tokenLength==0){
+                        tokenLength =1;
+                    }
+                    if(index < len-1 && str->at(index+1)=='-'&& (index - offset)==0){
+                        //tokenLength = len - index;
+                        tokenLength = 2;
+                        found = true;
+                       comment = true;
+                       temp_comment = index+2;
+                    }
+                    found = true;
+                    return;
+                }
+                if(str->at(index)=='#'||str->at(index)=='(' ||str->at(index)==')'||str->at(index)==';'||str->at(index)=='|'||str->at(index)=='&'
+                    ||str->at(index)=='+'||str->at(index)=='.' ){
+                   // cout << "find single operator" << endl;
+                    tokenLength = index- offset;
+                    //cout << "tokenlength is "<< tokenLength<<endl;
+                    if(tokenLength ==0){
+                   // cout << "tokenlength is " << endl;
+                        tokenLength = 1;
+                    }
+                    found = true;
+                    return;
+                }
+                if(str->at(index)=='*'){
+                   // cout << "find *" << endl;
+                    tokenLength = index - offset;
+                   // cout << "tokenlength is " << tokenLength<< endl;
+                    if(tokenLength ==0){
+                        tokenLength =1;
+                    }
+                    if(index < len-1 && str->at(index+1)=='*'&& (index - offset) ==0 ){
+                        tokenLength =2;
+                    }
+
+                    found = true;
+                    return;
+                }
+                if(str->at(index)=='/'){
+                    tokenLength = index -offset;
+                    if(tokenLength ==0){
+                        tokenLength =1;
+                    }
+                    if((index< len-1) && str->at(index+1)=='=' &&(index - offset) ==0){
+                        tokenLength =2;
+                    }
+
+                    found = true;
+                    return;
+                }
+                if(str->at(index)==':'){
+                    tokenLength = index - offset;
+                    if(tokenLength ==0){
+                        tokenLength = 1;
+                    }if((index < len-1)&& str->at(index+1)=='=' &&(index - offset) ==0){
+                        tokenLength = 2;
+                    }
+                    found = true;
+                    return;
+                }
+                if(str->at(index)=='<'){
+                    tokenLength = index -offset;
+                    if(tokenLength ==0){
+                        tokenLength =1;
+                    }
+                    if((index< len-1)&& str->at(index+1)=='=' && (index - offset) ==0){
+                        tokenLength =2;
+                    }
+                    if((index< len-1)&& str->at(index+1)=='>' && (index - offset)==0){
+                        tokenLength =2;
+                    }
+                    found = true;
+                    return;
+                }
+                if(str->at(index)=='>'){
+                    tokenLength = index -offset;
+                    if(tokenLength ==0){
+                        tokenLength =1;
+                    }
+                    if((index< len-1)&& str->at(index+1)=='=' && (index - offset) ==0){
+                        tokenLength =2;
+                    }
+                    found = true;
+                    return;
+                }
+                if(str->at(index)=='='){
+                    tokenLength = index -offset;
+                    if(tokenLength ==0){
+                        tokenLength =1;
+                    }
+                    if((index< len-1)&& str->at(index+1)=='>' && (index - offset) ==0){
+                        tokenLength =2;
+                    }
+                    found = true;
+                    return;
+                }
+                if (str->at(index)=='\'' ){
+                    tokenLength = index -offset;
+                    if(tokenLength ==0){
+                        tokenLength =1;
+                    }
+                    if(index < len-2 && str->at(index+2)=='\'' && (index -offset)==0){
+                        tokenLength =3;
+                    }
+                    found = true;
+                    return;
+                }
+                if(str->at(index)=='"'){
+                    tokenLength = index-offset;
+
+                    if(str->at(index-1)=='X'||str->at(index-1)=='x'||str->at(index-1)=='B'||str->at(index-1)=='b'||str->at(index-1)=='O'
+                    ||str->at(index-1)=='o'){
+                        size_t temp_index = (*str).find_first_of("\"",index+1);
+                        //cout << "the temp_index value for with x is "<<temp_index << endl;
+                        tokenLength = temp_index - (index-2);
+                        index = temp_index+1;
+                    }
+                    else {
+                        size_t temp_index = (*str).find_first_of("\"",index+1);
+                        //cout << "the temp index is " << temp_index << endl;
+                        tokenLength = temp_index - (index-1);
+                        index = temp_index+1;
+                    }
+                    found = true;
+                    return;
+                }
+                index ++;
             }
         }
+        if (index == len) {
+			tokenLength = len - offset;
+        }
     }
-}
+
 
 
 
@@ -101,12 +221,19 @@ void Tokenizer::prepareNextToken()
 //Resets all Tokenizer state variables
 //Calls Tokenizer::prepareNextToken() as the last statement before returning.
 void Tokenizer::setString(string *str) {
-    //if the string has characters in it then you initialize some variables and prepare the next token for the get next token funtion
-    complete = false;
-    offset = 0;
-    tokenLength = 0;
-    this->str = str;
-    prepareNextToken();
+    if (str->length() == 0) {
+		//this is executed if a blank string is passed in
+		complete = true;
+	}
+	//if the string has characters in it then you initialize some variables and prepare the next token for the get next token funtion
+	else {
+        complete = false;
+        comment = false;
+        offset = 0;
+        tokenLength = 0;
+        this->str = str;
+        prepareNextToken();
+	}
 }
 
 //Returns the next token. Hint: consider the substr function
@@ -119,8 +246,7 @@ string Tokenizer::getNextToken() {
 	offset = offset + tokenLength;
 	//move to the new position to seek forward
 	tokenLength = 0;
-	if (comment) {comment = false;}
-	if (temp == "--") {comment = true;}
+
 	prepareNextToken();
     return temp;
 }
