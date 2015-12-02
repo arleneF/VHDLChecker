@@ -12,10 +12,10 @@ enum tokenType {T_Operator, T_Identifier, T_Literal, T_CommentBody, T_Other};
 
 const string arrayOfKeywords[]={"abs", "access", "after", "alias", "all", "and", "architecture", "array", "assert", "attribute",  "begin", "block", "body", "buffer", "bus", "case", "component", "configuration", "constant", "disconnect", "downto", "else", "elseif", "end", "entity", "exit", "file", "for", "function", "generate", "generic", "group", "guarded", "if", "impure", "in", "inertial", "inout", "is", "label", "library", "linkage", "literal", "loop", "map", "mod", "nand", "new", "next", "nor", "not", "null", "of", "on", "open", "or", "others", "out", "package", "port", "postponed", "procedure", "process", "pure", "range", "record", "register", "reject", "rem", "report", "return", "rol", "ror", "select" ,"severity" ,"signal" ,"shared" ,"sla" ,"sll" ,"sra" ,"srl" ,"subtype", "then", "to", "transport", "type", "unaffected", "units", "until", "use", "variable", "wait", "when", "while", "with", "xnor", "xor"};
 
-string arrayOfOperators1[]={"<=","/=","=>",">","<","+","-","*","/","=","**","&","abs","not","mod","rem","sll","srl","sla","sra","rol","ror","and","or","xor","xnor","nor","nand"};
+const string arrayOfOperators[]={"<=","/=","=>",">","<","+","-","*","/","=","**","&","abs","not","mod","rem","sll","srl","sla","sra","rol","ror","and","or","xor","xnor","nor","nand"};
 
-const string arrayOfLetter[]={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
-
+const string Letter="abcdefghijklmnopqrstuvwxyz";
+//const string arrayOfLetter[]={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
 //const string arrayOfLetter[]={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
 
@@ -33,9 +33,10 @@ private:
 	Token *prev; //Previous pointer for doubly linked list
 	string stringRep; //Token value
 
-  bool _isKeyword; //true if token is a reserved keyword
-  tokenType type; //enum that holds the type of the token
-  tokenDetails *details; //pointer to tokenDetails struct, owned by this token, only valid if type is T_Literal or  is a T_Identifier and is a variable/signal.  Lazy allocation, only allocated when needed (see setTokenDetails function declaration).
+    bool alreadyExist;
+    bool _isKeyword; //true if token is a reserved keyword
+    tokenType type; //enum that holds the type of the token
+    tokenDetails *details; //pointer to tokenDetails struct, owned by this token, only valid if type is T_Literal or  is a T_Identifier and is a variable/signal.  Lazy allocation, only allocated when needed (see setTokenDetails function declaration).
 
 	//Allow TokenList class to access Token member variables marked private
   //https://en.wikipedia.org/wiki/Friend_class
@@ -44,12 +45,12 @@ private:
 public:
 	//Default Constructor, pointers initialized to NULL, and other variable initialization
   //tokenDetails should NOT be allocated here
-	Token() : next(nullptr), prev(nullptr), details(NULL) { }
+	Token() : next(nullptr), prev(nullptr), details(NULL), alreadyExist(false), _isKeyword(false) { }
 
 	//Constructor with string initialization
-	Token(const string &stringRep) : next(nullptr), prev(nullptr), stringRep(stringRep) { }
+	Token(const string &stringRep) : next(nullptr), prev(nullptr), stringRep(stringRep), alreadyExist(false), _isKeyword(false), details(nullptr) { }
 
-  //Copy constructor
+    //copy constructor
   Token(const Token &token);
 
   //Destructor, free any memory owned by this object
@@ -108,9 +109,9 @@ public:
     {
       if (this->details == nullptr)
           details = new tokenDetails;
-      details->type=type; details->width=width;
-    }
-};
+      details->type=type; details->width=0;}
+    };
+
 //A doubly-linked list class consisting of Token elements
 class TokenList {
 private:

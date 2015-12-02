@@ -22,14 +22,12 @@ Token::Token(const Token &token){
     _isKeyword=token._isKeyword;
     type=token.type;
     if(token.details ==nullptr) {//allocate and copy contents
-       details =nullptr;//new tokenDetails;
-       //details->type="";
+        details =nullptr;//new tokenDetails;
     }
     else {
-           details =new tokenDetails;
-
+        details =new tokenDetails;
         details->type=token.details->type;
-        details->width=token.details->width;
+        details->width=token.details->width; //*details=*token.details
         }
 }
 
@@ -42,28 +40,26 @@ Token::~Token(){
 
 //Assignment operator
 void Token::operator =(const Token& token){
+
     next=token.next;
     prev=token.prev;
     stringRep=token.stringRep;
     _isKeyword=token._isKeyword;
+    alreadyExist=token.alreadyExist;
     type=token.type;
-    if(token.details ==nullptr) {//allocate and copy contents
-       if(details) {
-            delete details;
-            details =nullptr;//new tokenDetails;
-        }
-       //details->type="";
+    //allocate and copy contents
+    //consider 4 conditions, think of example A = B:
+    if(token.details ==nullptr) { // if token_details are not allocated yet
+       if(details) { //if lhs has details but rhs doesn't (A has value but not B)
+            details =nullptr;}
+       else{ details= nullptr; } //if both sides don't have details (A & B both don't assign details)
     }
     else {
-        if(!details) {
-           details =new tokenDetails;
-           }
-
-        details->type=token.details->type;
-        details->width=token.details->width;
-        }
+        if(!details) {// if lhs doesn't have details but rhs has (A dont initialize but B)
+            details =new tokenDetails;}
+        *details=*token.details;//else if both sides have details
+    }
 }
-
 
 
 //Appends the token to the TokenList if not null
@@ -98,83 +94,102 @@ bool TokenList::isIntegerLiteral(const string & input)
 
 //find token details and type and update token.  May require examining properties of neighbouring tokens
 void TokenList::findAndSetTokenDetails(Token *token){
-    //first to find Keywords and set boolean type as true
-    const int length_Keyword= 100; //97 //get the length of arrayOfKeywords
-    for (int i=0; i<length_Keyword; i++)
-    {
-        if (token->stringRep == arrayOfKeywords[i]){
-            //compare tableOfKeywords
-            token->_isKeyword=true;}
-        else{
-        token->_isKeyword=false;}
-    }
-
     //tracersing for a comment body
-    if(token->prev->stringRep=="--")
+    //put comment case the very beginning, is case meet situation like "--and" (in case make comment body be keyword or operator)
+    if(token!=nullptr  && token->prev!=nullptr && token->prev->stringRep=="--")
     {
         token->setTokenType(T_CommentBody);
         return;
     }
 
+    //use tolower function to convert everything to lower case since VHDL is case-sensitive except literal
+    string str = token->stringRep;
+    int len=(int) str.length();
+    for(int i=0;i<len;i++){
+        str[i] = tolower(str[i]);}
+
+
+    //first to find Keywords and set boolean type as true
+    const int length_Keyword= 97; //get the length of arrayOfKeywords
+    token->_isKeyword=false;
+    for (int i=0; i<length_Keyword; i++)
+    {
+        if (str == arrayOfKeywords[i]){//compare tableOfKeywords
+            token->_isKeyword=true;}
+    }
+
 
     //traversing for operator
     //Didnt consider token like "=>, <=, ==" here, this should be done in prepareNextToken
-    for (int i=0; i < 28; i++) {
-        if (token->stringRep.find(arrayOfOperators1[i])!=std::string::npos){
+    for (int i=0; i<28; i++)
+    {
+        if (str == arrayOfOperators[i]){//compare tableOfKeywords
             token->setTokenType(T_Operator);
-            return;
-        }
+            return;}
     }
-
 
 
     //traverse for literal
     //cases where it has bit vectors "0010101", x"1234ABCD"
     if ((token->stringRep).find_first_of("\"")!=std::string::npos){ //can find "
-        if ((token->stringRep).find_first_of("\"")==0){// if " starts the first position of token
+        if (token->details==nullptr)
+            token->details=new tokenDetails;
+        if ((token->stringRep).find_first_of("\"")==0 && (token->stringRep).find_last_of("\"") != (token->stringRep).find_first_of("\"")){// if " starts the first position of token
             token->details->width=static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1;
             token->details->type="std_logic_vector";
             token->setTokenType(T_Literal);
+            return;
         }
         if ((token->stringRep).find_first_of("\"")==1){// if " is the second position of token
             if ((token->stringRep).at(0)=='X'||(token->stringRep).at(0)=='x')
             {
                 token->details->width=(static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1)*4;
                 token->details->type="std_logic_vector";
-                token->setTokenType(T_Literal);}
+                token->setTokenType(T_Literal);
+                return;}
             else if ((token->stringRep).at(0)=='B'||(token->stringRep).at(0)=='b')
             {
                 token->details->width=static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1;
                 token->details->type="std_logic_vector";
-                token->setTokenType(T_Literal);}
+                token->setTokenType(T_Literal);
+                return;}
             else if ((token->stringRep).at(0)=='O'||(token->stringRep).at(0)=='o')
             {
                 token->details->width=(static_cast<int>((token->stringRep).find_last_of("\"")-(token->stringRep).find_first_of("\""))-1)*3;
                 token->details->type="std_logic_vector";
-                token->setTokenType(T_Literal);}
+                token->setTokenType(T_Literal);
+                return;}
         }
-        return;
     }
+
 
     //traverse for std_logic e.g. '0','1'
-    if ((token->stringRep).find_first_of("\'")==0 && (token->stringRep).find_first_of("\'")==2){
-        if ((token->stringRep).at(1)=='0'||(token->stringRep).at(1)=='1'){
-            token->details->type="std_logic";
-            token->details->width=1;
-            token->setTokenType(T_Literal);}
-        return;
-    }
+    if ((token->stringRep)=="'0'"||(token->stringRep)=="'1'"||(token->stringRep)=="'2'"||(token->stringRep)=="'3'"||(token->stringRep)=="'4'"||(token->stringRep)=="'5'"||(token->stringRep)=="'6'"||(token->stringRep)=="'7'"||(token->stringRep)=="'8'"||(token->stringRep)=="'9'"){
+        if (token->details == nullptr)
+            token->details=new tokenDetails;
+        token->details->type="std_logic";
+        token->details->width=1;
+        token->setTokenType(T_Literal);
+        return;}
+
 
     //traverse for boolean literal
-    if (token->stringRep=="true" || token->stringRep=="false"){
+    if (str=="true" || str == "false"){
+        if (token->details == nullptr)
+            token->details=new tokenDetails;
         token->setTokenType(T_Literal);
+        token->details->type="boolean";
         token->details->width=1;
         return;
     }
 
+
     //traverse for integer literal
-    if (isIntegerLiteral(token->stringRep)){
-        token->setTokenType(T_Identifier);
+    if (isIntegerLiteral(token->stringRep))
+    {
+        if (token->details ==nullptr)
+            token->details= new tokenDetails;
+        token->setTokenType(T_Literal);
         token->details->width=0;
         token->details->type="integer";
         return;
@@ -182,34 +197,59 @@ void TokenList::findAndSetTokenDetails(Token *token){
 
 
     //traverse for identifier
-    //--------------------need to be classified as variable or signal!!! which is not been done yet!--------------------
-    //--------------------also didn't do tolower!----------------
     //all start from letters except  operator, comment, and literals should be identifier
-    if((arrayOfLetter[0]).find_first_of((token->stringRep).at(0))==0)
+    if((str).find_first_not_of(Letter)!= 0) //as long as the first character in stringRep is in Letter
     {
         token->setTokenType(T_Identifier);
-        if (token->getNext() != nullptr && token->getNext()->getNext() != nullptr && token->getNext()->getStringRep() == ":")
+        Token *temp1, *temp = new Token;
+        temp1=head;
+        //first check whether this token already exists or not
+        //traverse the tokenlist (where target token exists) until find same string with target token
+        while (temp1 != nullptr && temp1 != token)
         {
-            //------------------not sure this way to check variable or signals are right or wrong-----------------------
-            token->details->type = token->getNext()->getNext()->getStringRep();//Set detail type
-            if (token->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getStringRep() == "(" &&token->getNext()->getNext()->getNext()->getNext() != nullptr)//Find width
+            if (temp1->stringRep == token->stringRep){ //FIRST same stringRep means target token already exists
+                token->alreadyExist=true;
+                temp = temp1;}
+            temp1=temp1->getNext();//else if traverse to next token
+        }
+
+        
+       if (token != nullptr && token->alreadyExist == false) //if this token stringRep shows the first time
+        {
+           if (token->getNext() != nullptr && token->getNext()->getNext() != nullptr && token->getNext()->getStringRep() == ":") //which imply it is a vector
             {
-                int length = std::atoi(token->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str()) - std::atoi(token->getNext()->getNext()->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str());
-                if (length < 0)
-                    length = - length;
-                token->details->width = length + 1;
+                if (token->details==nullptr) //initialize token detail
+                    token->details=new tokenDetails;
+                token->details->type = token->getNext()->getNext()->getStringRep();//Set detail type
+                if (token->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getStringRep() == "(" &&token->getNext()->getNext()->getNext()->getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext() != nullptr && token->getNext()->getNext()->getNext()->getNext()-> getNext()->getNext() != nullptr){//Find width
+                    int length = std::atoi(token->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str()) - std::atoi(token->getNext()->getNext()->getNext()->getNext()->getNext()->getNext()->getStringRep().c_str());
+                    if (length < 0)
+                        length = - length;
+                    token->details->width = length + 1;}
             }
         }
-        return;
+       else if (token != nullptr && token->alreadyExist == true){// if find this token already exists before
+            if (temp->details != nullptr && token->details != nullptr)
+                {
+                    token->details->type= temp->details->type;
+                    token->details->width=temp->details->width;
+                }
+            else if(temp->details != nullptr){
+                token->details = new tokenDetails;
+                token->details->type= temp->details->type;
+                token->details->width=temp->details->width;
+            }}
+        //return;
     }
 
 
     //traversing for other_type
+    //if token are not be detected as comment, operator, literal or identifier, then it will be categorize as other
     else
     {
         token->setTokenType(T_Other);
+        return;
     }
-    return;
 }
 
 
@@ -454,7 +494,7 @@ string Tokenizer::getNextToken() {
 //Deletes the token
 //On return from function, head, tail and the prev and next Tokens (in relation to the provided token) may be modified.
 void TokenList::deleteToken(Token *token)
-{ if (token)
+{ if (token && token->next != nullptr && token->prev != nullptr)
    {
 		if (head == token && tail == token) { //if tokenlist only have one element and is equal to our target
 			head = NULL;
@@ -483,7 +523,6 @@ int removeComments(TokenList &tokenList) {
     Token *temp=tokenList.getFirst(); //create a temp token and initialize it to first element in tokenList
     int count=0;
     while (temp!=NULL && temp->getNext() != nullptr){ //if token is not the last element in tokenLisk
-        //cout<<"read"<<temp->getStringRep()<<"as the current token"<<endl;
             if(temp->getStringRep()=="--")//once detect --
             {
                 count++; //update comment number
@@ -504,20 +543,23 @@ int removeComments(TokenList &tokenList) {
 //Returns the number of tokens removed
 int removeTokensOfType(TokenList &tokenList,tokenType type) {
     Token *temp=tokenList.getFirst();
-    while(temp!=NULL)
+    int count=0;
+    while(temp!=nullptr && temp -> getNext() != nullptr)
     {
         if(temp->getTokenType()==type) //if find target type, delete and go to next token
         {
-            tokenList.deleteToken(temp);
+            count++;
             temp=temp->getNext();
+            tokenList.deleteToken(temp->getPrev());
         }
         else
-        {
-            temp=temp->getNext();
-        }
+        {temp=temp->getNext();}
+    }
+    if (temp->getNext() == nullptr){
+        tokenList.deleteToken(temp);
     }
     delete temp;
-    return 0;
+    return count;
 }
 
 //Creates a new TokenList, and returns a pointer to this list
