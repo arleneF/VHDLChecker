@@ -82,7 +82,7 @@ class Tokenizer {
 private:
 	/*State tracking variables for processing a single string*/
 	bool complete; //True if finished processing the current string
-
+    bool comment;
 	size_t offset; //Current position in string
 	size_t tokenLength; //Current token length
 	string *str; //A pointer to the current string being processed
@@ -98,7 +98,7 @@ private:
 
 public:
 	//Default Constructor- YOU need to add the member variable initializers.
-	Tokenizer() : { /*Fill in implementation */ }
+	Tokenizer() : complete(false), str(nullptr),offset(0), tokenLength(0){}
 
 	//Sets the current string to be tokenized
 	//Resets all Tokenizer state variables
